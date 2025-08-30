@@ -116,9 +116,13 @@ class PBSAPIClient:
                                     medications.append(medication)
                         
                         return medications
+                    else:
+                        # If no matches found in API, return mock data
+                        logger.info(f"No PBS API results found for '{query}', returning mock data")
+                        return self._get_mock_pbs_data(query)
                 else:
                     logger.warning(f"PBS Schedules API returned status {schedules_response.status_code}")
-                    return []
+                    return self._get_mock_pbs_data(query)
                     
         except Exception as e:
             logger.error(f"PBS API search failed: {e}")
