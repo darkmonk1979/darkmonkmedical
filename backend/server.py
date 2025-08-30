@@ -321,7 +321,7 @@ async def google_search_info():
 
 @api_router.post("/search/unified", response_model=UnifiedSearchResult)
 async def unified_medical_search(search_request: MedicationSearchCreate):
-    """Unified search across PBS and Google medical sites"""
+    """Unified search - PBS results with Google search info"""
     try:
         # Log search
         search_log = MedicationSearch(
@@ -330,14 +330,13 @@ async def unified_medical_search(search_request: MedicationSearchCreate):
         )
         await db.medication_searches.insert_one(search_log.dict())
         
-        # Perform both searches concurrently
+        # Get PBS results only (Google search is handled by embedded widget)
         pbs_results = await pbs_client.search_medications(search_request.query)
-        web_results = await google_client.search_medical_sites(search_request.query)
         
         unified_result = UnifiedSearchResult(
             query=search_request.query,
             pbs_results=pbs_results,
-            web_results=web_results
+            web_results=[]  # Empty since Google search is now embedded
         )
         
         return unified_result
