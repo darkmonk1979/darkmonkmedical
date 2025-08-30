@@ -129,70 +129,48 @@ function App() {
     );
   };
 
-  const renderWebResults = (results) => {
-    if (!results || !Array.isArray(results) || results.length === 0) {
-      return (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No Web Results</AlertTitle>
-          <AlertDescription>No results found on Australian medical websites.</AlertDescription>
-        </Alert>
-      );
-    }
-
-    const groupedResults = results.reduce((acc, result) => {
-      if (!acc[result.source]) acc[result.source] = [];
-      acc[result.source].push(result);
-      return acc;
-    }, {});
+  const GoogleSearchEmbed = () => {
+    useEffect(() => {
+      // Load Google CSE script if not already loaded
+      if (!window.google || !window.google.search) {
+        const script = document.createElement('script');
+        script.src = 'https://cse.google.com/cse.js?cx=010783511027097431382:jphdjk7zock';
+        script.async = true;
+        document.head.appendChild(script);
+        
+        return () => {
+          // Cleanup script when component unmounts
+          document.head.removeChild(script);
+        };
+      }
+    }, []);
 
     return (
-      <div className="space-y-6">
-        {Object.entries(groupedResults).map(([source, sourceResults]) => (
-          <div key={source}>
-            <h3 className="text-lg font-semibold mb-3 text-green-800 flex items-center gap-2">
-              <Globe className="w-5 h-5" />
-              {source} Results
-            </h3>
-            <div className="space-y-3">
-              {sourceResults.map((result, index) => (
-                <Card key={index} className="border-green-200 hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-green-800 mb-2 leading-snug">
-                          {result.title}
-                        </h4>
-                        <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                          {result.snippet}
-                        </p>
-                        <Badge variant="outline" className="border-green-300 text-green-700">
-                          {result.source}
-                        </Badge>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        asChild
-                        className="border-green-300 text-green-700 hover:bg-green-50"
-                      >
-                        <a 
-                          href={result.link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          View
-                        </a>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className="space-y-4">
+        <Alert className="border-green-200 bg-green-50">
+          <Globe className="h-4 w-4" />
+          <AlertTitle className="text-green-800">Google Custom Search</AlertTitle>
+          <AlertDescription className="text-green-700">
+            Search Australian medical websites including TGA, NPS Medicine Finder, PBS, and Health.gov.au using Google's search engine.
+          </AlertDescription>
+        </Alert>
+        
+        <Card className="border-green-200">
+          <CardContent className="p-6">
+            <div className="gcse-search"></div>
+          </CardContent>
+        </Card>
+        
+        <div className="text-sm text-gray-600 space-y-2">
+          <p><strong>Covered sites:</strong></p>
+          <ul className="list-disc list-inside space-y-1 ml-4">
+            <li>TGA (Therapeutic Goods Administration) - tga.gov.au</li>
+            <li>NPS Medicine Finder - nps.org.au</li>
+            <li>PBS (Pharmaceutical Benefits Scheme) - pbs.gov.au</li>
+            <li>Australian Department of Health - health.gov.au</li>
+            <li>Medicine Safety - medicinesafety.gov.au</li>
+          </ul>
+        </div>
       </div>
     );
   };
