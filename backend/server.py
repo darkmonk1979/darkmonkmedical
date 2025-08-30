@@ -304,23 +304,20 @@ async def search_pbs(search_request: MedicationSearchCreate):
         logger.error(f"PBS search error: {e}")
         raise HTTPException(status_code=500, detail="PBS search failed")
 
-@api_router.post("/search/google", response_model=List[GoogleSearchResult])
-async def search_google_medical(search_request: MedicationSearchCreate):
-    """Search Australian medical websites using Google"""
-    try:
-        # Log search
-        search_log = MedicationSearch(
-            query=search_request.query,
-            search_type="google_search"
-        )
-        await db.medication_searches.insert_one(search_log.dict())
-        
-        results = await google_client.search_medical_sites(search_request.query)
-        return results
-        
-    except Exception as e:
-        logger.error(f"Google search error: {e}")
-        raise HTTPException(status_code=500, detail="Google search failed")
+@api_router.get("/search/google-info")
+async def google_search_info():
+    """Information about Google Custom Search availability"""
+    return {
+        "message": "Google Custom Search is available via embedded widget",
+        "cse_id": "010783511027097431382:jphdjk7zock",
+        "covered_sites": [
+            "tga.gov.au",
+            "nps.org.au", 
+            "pbs.gov.au",
+            "health.gov.au",
+            "medicinesafety.gov.au"
+        ]
+    }
 
 @api_router.post("/search/unified", response_model=UnifiedSearchResult)
 async def unified_medical_search(search_request: MedicationSearchCreate):
