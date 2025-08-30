@@ -114,8 +114,12 @@ class PBSAPIClient:
                                         prescriber_type=item.get('prescriber_type')
                                     )
                                     medications.append(medication)
-                        
-                        return medications
+                            
+                            return medications
+                        else:
+                            # If AMT API fails, return mock data
+                            logger.warning(f"PBS AMT API returned status {amt_response.status_code}")
+                            return self._get_mock_pbs_data(query)
                     else:
                         # If no matches found in API, return mock data
                         logger.info(f"No PBS API results found for '{query}', returning mock data")
