@@ -52,14 +52,18 @@ function App() {
       return;
     }
 
+    // For Google search, we don't make API calls since we're using the embed
+    if (searchType === "google") {
+      setActiveTab("google");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSearchResults(null);
 
     try {
-      const endpoint = searchType === "unified" ? "/search/unified" : 
-                     searchType === "pbs" ? "/search/pbs" : 
-                     "/search/google";
+      const endpoint = searchType === "unified" ? "/search/unified" : "/search/pbs";
       
       const response = await axios.post(`${API}${endpoint}`, {
         query: searchQuery,
