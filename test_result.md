@@ -101,3 +101,47 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## user_problem_statement: "Frontend shows 'React Refresh runtime should not be included in the production bundle' on Edge when visiting darkmonk.biz. Google CSE embed intermittently not loading."
+## backend:
+##   - task: "API health and search endpoints"
+##     implemented: true
+##     working: true
+##     file: "backend/server.py"
+##     stuck_count: 0
+##     priority: "medium"
+##     needs_retesting: false
+##     status_history:
+##         -working: true
+##         -agent: "main"
+##         -comment: "No backend changes in this iteration; endpoints stable per last deployment."
+## frontend:
+##   - task: "Disable React Refresh in production and ensure Google CSE embed renders"
+##     implemented: true
+##     working: false
+##     file: "frontend/craco.config.js (and frontend/src/App.js)"
+##     stuck_count: 1
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##         -working: false
+##         -agent: "user"
+##         -comment: "Edge console shows React Refresh runtime error in production at 192.168.0.121:3000"
+##         -working: false
+##         -agent: "main"
+##         -comment: "Patched craco.config.js to strip HMR/ReactRefresh in production and set FAST_REFRESH=false; updated App.js to explicitly render Google CSE on Web Search tab. Awaiting manual retest at http://darkmonk.biz"
+## metadata:
+##   created_by: "main_agent"
+##   version: "1.0"
+##   test_sequence: 1
+##   run_ui: false
+## test_plan:
+##   current_focus:
+##     - "Frontend: React Refresh fix & CSE embed validation"
+##   stuck_tasks:
+##     - "React Refresh runtime conflict on production dev-server"
+##   test_all: false
+##   test_priority: "high_first"
+## agent_communication:
+##     -agent: "main"
+##     -message: "Applied frontend fixes. Please restart frontend service and hard refresh browser. User will test UI manually."
