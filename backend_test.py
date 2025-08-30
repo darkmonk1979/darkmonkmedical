@@ -78,36 +78,26 @@ class MedicalSearchAPITester:
             self.log_test(f"PBS Search ({medication})", False, f"Exception: {str(e)}")
             return False, []
 
-    def test_google_search(self, medication="Aspirin"):
-        """Test Google medical search endpoint"""
+    def test_google_search_info(self):
+        """Test Google search info endpoint"""
         try:
-            payload = {
-                "query": medication,
-                "search_type": "google_search"
-            }
-            
-            response = requests.post(
-                f"{self.api_url}/search/google", 
-                json=payload,
-                headers={'Content-Type': 'application/json'},
-                timeout=30
-            )
+            response = requests.get(f"{self.api_url}/search/google-info", timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
-                    self.log_test(f"Google Search ({medication})", True, f"Found {len(data)} results")
+                if isinstance(data, dict) and "cse_id" in data and "covered_sites" in data:
+                    self.log_test("Google Search Info", True, f"CSE ID: {data.get('cse_id')}, Sites: {len(data.get('covered_sites', []))}")
                     return True, data
                 else:
-                    self.log_test(f"Google Search ({medication})", False, f"Invalid response format: {type(data)}")
-                    return False, []
+                    self.log_test("Google Search Info", False, f"Invalid response format: {data}")
+                    return False, {}
             else:
-                self.log_test(f"Google Search ({medication})", False, f"Status code: {response.status_code}, Response: {response.text}")
-                return False, []
+                self.log_test("Google Search Info", False, f"Status code: {response.status_code}, Response: {response.text}")
+                return False, {}
                 
         except Exception as e:
-            self.log_test(f"Google Search ({medication})", False, f"Exception: {str(e)}")
-            return False, []
+            self.log_test("Google Search Info", False, f"Exception: {str(e)}")
+            return False, {}
 
     def test_unified_search(self, medication="Insulin"):
         """Test unified search endpoint"""
