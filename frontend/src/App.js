@@ -303,9 +303,9 @@ function App() {
                     <Database className="w-4 h-4" />
                     PBS Results ({searchResults.pbs_results?.length || 0})
                   </TabsTrigger>
-                  <TabsTrigger value="web" className="flex items-center gap-2">
+                  <TabsTrigger value="google-info" className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    Web Results ({searchResults.web_results?.length || 0})
+                    Web Search Info
                   </TabsTrigger>
                 </TabsList>
                 
@@ -313,14 +313,20 @@ function App() {
                   {renderPBSResults(searchResults.pbs_results)}
                 </TabsContent>
                 
-                <TabsContent value="web">
-                  {renderWebResults(searchResults.web_results)}
+                <TabsContent value="google-info">
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <Globe className="h-4 w-4" />
+                    <AlertTitle className="text-blue-800">Web Search Available</AlertTitle>
+                    <AlertDescription className="text-blue-700">
+                      Switch to the "Web Search" tab above to search Australian medical websites with Google Custom Search.
+                    </AlertDescription>
+                  </Alert>
                 </TabsContent>
               </Tabs>
             ) : activeTab === "pbs" ? (
               renderPBSResults(searchResults)
             ) : (
-              renderWebResults(searchResults)
+              <GoogleSearchEmbed />
             )}
           </div>
         )}
