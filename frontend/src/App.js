@@ -267,13 +267,13 @@ function App() {
               
               <div className="mt-4 text-sm text-gray-600">
                 <TabsContent value="unified">
-                  Search across PBS database and Australian medical websites simultaneously
+                  Search PBS database and get info about web search options
                 </TabsContent>
                 <TabsContent value="pbs">
                   Search only the Pharmaceutical Benefits Scheme database
                 </TabsContent>
                 <TabsContent value="google">
-                  Search Australian medical websites including TGA and NPS Medicine Finder
+                  Search Australian medical websites using Google Custom Search Engine
                 </TabsContent>
               </div>
             </Tabs>
