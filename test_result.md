@@ -115,6 +115,9 @@
 ##         -working: true
 ##         -agent: "main"
 ##         -comment: "No backend changes in this iteration; endpoints stable per last deployment."
+##         -working: true
+##         -agent: "testing"
+##         -comment: "Comprehensive backend API testing completed successfully. All 4 review-specific endpoints tested: GET /api/health (status: healthy, database: connected), POST /api/search/pbs (paracetamol search returned 1 result with all required fields), POST /api/search/unified (aspirin search returned proper JSON object with query, pbs_results, web_results arrays), GET /api/search/history (50 search records retrieved with query and search_type fields). All endpoints responding correctly at https://medfinder-9.preview.emergentagent.com/api with 10s timeout. No critical issues found."
 ## frontend:
 ##   - task: "Disable React Refresh in production and ensure Google CSE embed renders"
 ##     implemented: true
