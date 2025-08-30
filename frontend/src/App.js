@@ -130,7 +130,7 @@ function App() {
   };
 
   const renderWebResults = (results) => {
-    if (!results || results.length === 0) {
+    if (!results || !Array.isArray(results) || results.length === 0) {
       return (
         <Alert>
           <AlertCircle className="h-4 w-4" />
