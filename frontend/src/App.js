@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import { Search, Pill, ExternalLink, Clock, Database, Globe, Loader2, AlertCircle, CheckCircle } from "lucide-react";
@@ -64,15 +64,12 @@ function App() {
 
     try {
       const endpoint = searchType === "unified" ? "/search/unified" : "/search/pbs";
-      
       const response = await axios.post(`${API}${endpoint}`, {
         query: searchQuery,
         search_type: searchType
       });
-      
       setSearchResults(response.data);
       fetchSearchHistory(); // Refresh history
-      
     } catch (error) {
       console.error("Search failed:", error);
       setError(error.response?.data?.detail || "Search failed. Please try again.");
@@ -115,7 +112,7 @@ function App() {
             </CardHeader>
             <CardContent className="space-y-2">
               {med.form_strength && (
-                <p><span className="font-medium">Form & Strength:</span> {med.form_strength}</p>
+                <p><span className="font-medium">Form &amp; Strength:</span> {med.form_strength}</p>
               )}
               {med.manufacturer && (
                 <p><span className="font-medium">Manufacturer:</span> {med.manufacturer}</p>
@@ -133,7 +130,50 @@ function App() {
     );
   };
 
+  // Google CSE Embed with explicit render on tab activation
   const GoogleSearchEmbed = () => {
+    const renderedRef = useRef(false);
+
+    useEffect(() => {
+      // Try to render when the tab is active
+      if (!renderedRef.current && typeof window !== 'undefined') {
+        const tryRender = () => {
+          try {
+            if (window.google && window.google.search && window.google.search.cse && window.google.search.cse.element) {
+              window.google.search.cse.element.render({ div: 'gcse-container', tag: 'search' });
+              renderedRef.current = true;
+              return true;
+            }
+            if (window.__gcse && typeof window.__gcse.parsetags === 'function') {
+              window.__gcse.parsetags();
+              renderedRef.current = true;
+              return true;
+            }
+          } catch (e) {
+            console.warn('CSE render attempt failed:', e);
+          }
+          return false;
+        };
+
+        // Attempt immediately, then retry a few times if needed
+        if (!tryRender()) {
+          const retries = [300, 700, 1500];
+          let cleared = false;
+          const timers = retries.map((ms) => setTimeout(() => {
+            if (!renderedRef.current) {
+              tryRender();
+            }
+          }, ms));
+          return () => {
+            if (!cleared) {
+              timers.forEach(clearTimeout);
+              cleared = true;
+            }
+          };
+        }
+      }
+    }, []);
+
     return (
       <div className="space-y-4">
         <Alert className="border-green-200 bg-green-50">
@@ -143,13 +183,17 @@ function App() {
             Search Australian medical websites including TGA, NPS Medicine Finder, PBS, and Health.gov.au using Google's search engine.
           </AlertDescription>
         </Alert>
-        
+
         <Card className="border-green-200">
           <CardContent className="p-6">
-            <div className="gcse-search"></div>
+            {/* Container that we render CSE into */}
+            <div id="gcse-container" className="w-full">
+              {/* Fallback: If script auto-parses, this also works */}
+              <div className="gcse-search"></div>
+            </div>
           </CardContent>
         </Card>
-        
+
         <div className="text-sm text-gray-600 space-y-2">
           <p><strong>Covered Australian Medical Websites:</strong></p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
@@ -192,7 +236,6 @@ function App() {
             Search Australian government medical databases including PBS, TGA, and NPS Medicine Finder 
             for comprehensive medication information
           </p>
-          
           {/* API Health Status */}
           {apiHealth && (
             <div className="flex items-center justify-center gap-4 mt-6">
@@ -260,7 +303,7 @@ function App() {
                   Web Search
                 </TabsTrigger>
               </TabsList>
-              
+
               <div className="mt-4 text-sm text-gray-600">
                 <TabsContent value="unified">
                   Search PBS database and get info about web search options
@@ -285,13 +328,20 @@ function App() {
           </Alert>
         )}
 
-        {/* Search Results */}
-        {searchResults && (
+        {/* Always show Google CSE when the Web Search tab is active */}
+        {activeTab === 'google' && (
+          <div className="mb-8">
+            <GoogleSearchEmbed />
+          </div>
+        )}
+
+        {/* Search Results for PBS/Unified searches */}
+        {searchResults && activeTab !== 'google' && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Search Results for "{searchQuery}"
             </h2>
-            
+
             {activeTab === "unified" ? (
               <Tabs defaultValue="pbs" className="w-full">
                 <TabsList className="bg-gray-100 mb-6">
@@ -304,11 +354,11 @@ function App() {
                     Web Search Info
                   </TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="pbs">
                   {renderPBSResults(searchResults.pbs_results)}
                 </TabsContent>
-                
+
                 <TabsContent value="google-info">
                   <Alert className="border-blue-200 bg-blue-50">
                     <Globe className="h-4 w-4" />
@@ -319,10 +369,8 @@ function App() {
                   </Alert>
                 </TabsContent>
               </Tabs>
-            ) : activeTab === "pbs" ? (
-              renderPBSResults(searchResults)
             ) : (
-              <GoogleSearchEmbed />
+              renderPBSResults(searchResults)
             )}
           </div>
         )}
