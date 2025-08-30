@@ -197,8 +197,10 @@ class MedicalSearchAPITester:
         
         for med in medications_to_test:
             self.test_pbs_search(med)
-            self.test_google_search(med)
             self.test_unified_search(med)
+        
+        # Test Google search info endpoint
+        self.test_google_search_info()
         
         # Test search history
         self.test_search_history()
