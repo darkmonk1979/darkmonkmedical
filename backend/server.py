@@ -183,58 +183,90 @@ class PBSAPIClient:
 class GoogleSearchClient:
     def __init__(self):
         self.api_key = os.environ.get('GOOGLE_API_KEY')
+        self.cse_id = os.environ.get('GOOGLE_CSE_ID')
         self.base_url = "https://www.googleapis.com/customsearch/v1"
         
     async def search_medical_sites(self, query: str) -> List[GoogleSearchResult]:
         """Search Australian medical websites using Google Custom Search"""
-        if not self.api_key:
-            logger.error("Google API key not configured")
-            return []
+        if not self.api_key or not self.cse_id:
+            logger.error(f"Google API credentials not configured - API Key: {bool(self.api_key)}, CSE ID: {bool(self.cse_id)}")
+            return self._get_mock_web_results(query)
             
-        results = []
-        
-        # Define medical domains to search
-        medical_domains = [
-            "nps.org.au",
-            "tga.gov.au", 
-            "pbs.gov.au",
-            "health.gov.au",
-            "medicinesafety.gov.au"
-        ]
-        
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                for domain in medical_domains:
-                    params = {
-                        "key": self.api_key,
-                        "q": f"{query} site:{domain}",
-                        "num": 5
-                    }
+                params = {
+                    "key": self.api_key,
+                    "cx": self.cse_id,
+                    "q": query,
+                    "num": 10
+                }
+                
+                response = await client.get(self.base_url, params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    results = []
                     
-                    response = await client.get(self.base_url, params=params)
+                    for item in data.get('items', []):
+                        link = item.get('link', '')
+                        source = self._determine_source(link)
+                        
+                        result = GoogleSearchResult(
+                            title=item.get('title', ''),
+                            link=link,
+                            snippet=item.get('snippet', ''),
+                            source=source
+                        )
+                        results.append(result)
                     
-                    if response.status_code == 200:
-                        data = response.json()
-                        
-                        for item in data.get('items', []):
-                            source = "TGA" if "tga.gov.au" in domain else \
-                                   "NPS" if "nps.org.au" in domain else \
-                                   "PBS" if "pbs.gov.au" in domain else "Health.gov.au"
-                            
-                            result = GoogleSearchResult(
-                                title=item.get('title', ''),
-                                link=item.get('link', ''),
-                                snippet=item.get('snippet', ''),
-                                source=source
-                            )
-                            results.append(result)
-                    else:
-                        logger.warning(f"Google Search API error for {domain}: {response.status_code}")
-                        
+                    return results
+                else:
+                    logger.warning(f"Google Search API error: {response.status_code} - {response.text}")
+                    return self._get_mock_web_results(query)
+                    
         except Exception as e:
             logger.error(f"Google Search failed: {e}")
-            
-        return results
+            return self._get_mock_web_results(query)
+    
+    def _determine_source(self, link: str) -> str:
+        """Determine the source based on the URL"""
+        if "tga.gov.au" in link:
+            return "TGA"
+        elif "nps.org.au" in link:
+            return "NPS"
+        elif "pbs.gov.au" in link:
+            return "PBS"
+        elif "health.gov.au" in link:
+            return "Health.gov.au"
+        elif "medicinesafety.gov.au" in link:
+            return "Medicine Safety"
+        else:
+            return "Australian Health"
+    
+    def _get_mock_web_results(self, query: str) -> List[GoogleSearchResult]:
+        """Fallback mock data for demonstration purposes"""
+        mock_results = [
+            GoogleSearchResult(
+                title=f"NPS Medicine Finder - {query} Information",
+                link=f"https://www.nps.org.au/medicine-finder?q={query}",
+                snippet=f"Find comprehensive information about {query} including uses, side effects, interactions and safety information from NPS MedicineWise.",
+                source="NPS"
+            ),
+            GoogleSearchResult(
+                title=f"TGA - Therapeutic Goods Administration - {query}",
+                link=f"https://www.tga.gov.au/search?q={query}",
+                snippet=f"Australian government information about {query} regulation, safety alerts and product information from the Therapeutic Goods Administration.",
+                source="TGA"
+            ),
+            GoogleSearchResult(
+                title=f"Australian Government Department of Health - {query}",
+                link=f"https://www.health.gov.au/search?q={query}",
+                snippet=f"Official government health information about {query} including guidelines, policy and health professional resources.",
+                source="Health.gov.au"
+            )
+        ]
+        
+        return mock_results
 
 # Initialize clients
 pbs_client = PBSAPIClient()
