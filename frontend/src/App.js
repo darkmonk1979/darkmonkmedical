@@ -134,21 +134,6 @@ function App() {
   };
 
   const GoogleSearchEmbed = () => {
-    useEffect(() => {
-      // Load Google CSE script if not already loaded
-      if (!window.google || !window.google.search) {
-        const script = document.createElement('script');
-        script.src = 'https://cse.google.com/cse.js?cx=010783511027097431382:jphdjk7zock';
-        script.async = true;
-        document.head.appendChild(script);
-        
-        return () => {
-          // Cleanup script when component unmounts
-          document.head.removeChild(script);
-        };
-      }
-    }, []);
-
     return (
       <div className="space-y-4">
         <Alert className="border-green-200 bg-green-50">
@@ -166,14 +151,25 @@ function App() {
         </Card>
         
         <div className="text-sm text-gray-600 space-y-2">
-          <p><strong>Covered sites:</strong></p>
-          <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>TGA (Therapeutic Goods Administration) - tga.gov.au</li>
-            <li>NPS Medicine Finder - nps.org.au</li>
-            <li>PBS (Pharmaceutical Benefits Scheme) - pbs.gov.au</li>
-            <li>Australian Department of Health - health.gov.au</li>
-            <li>Medicine Safety - medicinesafety.gov.au</li>
-          </ul>
+          <p><strong>Covered Australian Medical Websites:</strong></p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-green-300 text-green-700">TGA</Badge>
+              <span>Therapeutic Goods Administration</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-blue-300 text-blue-700">NPS</Badge>
+              <span>NPS Medicine Finder</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-purple-300 text-purple-700">PBS</Badge>
+              <span>Pharmaceutical Benefits Scheme</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-orange-300 text-orange-700">Health.gov.au</Badge>
+              <span>Department of Health</span>
+            </div>
+          </div>
         </div>
       </div>
     );
